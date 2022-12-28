@@ -1,0 +1,94 @@
+---
+title: "Monthly NSPP Report"
+author: "DNP"
+date: "2022-12-28"
+output: html_document
+---
+
+```{r echo=FALSE, message=FALSE}
+library(tidyverse)
+library(knitr)
+library(RCurl)
+```
+
+
+```{r echo=FALSE}
+nspp_url <- "https://raw.githubusercontent.com/dexterpante/nspp/main/mini_nspp.csv"
+nspp <- read.csv(nspp_url)
+#("mini_nspp.csv")
+colnames(nspp) <- c("REGION","SDO", "D.KINDER", "D.ELEM","D.JHS", "D.SHS", "P.SHS", "D.TOTAL", "A.KINDER", "A.ELEM", "A.JHS", "A.SHS", "A.TOTAL" )
+
+nspp <- nspp %>% select(REGION, SDO, D.ELEM, D.JHS, D.SHS, A.ELEM, A.JHS, A.SHS) %>% mutate(D.TOTAL = D.ELEM + D.JHS + D.SHS, A.TOTAL = A.ELEM + A.JHS + A.SHS, HIRING_RATE = (A.TOTAL/D.TOTAL)*100, HIRING_RATE=round(HIRING_RATE, digits = 2)) %>% na.omit()
+```
+
+The value of `r nspp$D.ELEM[1]`
+
+```{r echo=FALSE}
+#create table
+#on the last row, input the latest rate
+#save output
+#read output
+#add new row
+#input latest rate
+#save output
+
+#create new table
+global_hiringrate <- data.frame(matrix(nrow=1, ncol=3))
+colnames(global_hiringrate) <- c("YEAR", "MONTH", "VALUES")
+
+
+#input sample data
+global_hiringrate$YEAR[1] <- 2022
+global_hiringrate$MONTH[1] <- c("Dec")
+global_hiringrate$VALUES[1] <- (sum(nspp$A.TOTAL)/sum(nspp$D.TOTAL)) * 100
+#above code can be deleted once global hiring rate csv is created
+
+#save output
+write.csv(global_hiringrate, "global_hiringrate.csv", row.names = FALSE)
+
+#read output
+global_hiringrate<- read.csv("global_hiringrate.csv")
+#add row and input data
+global_hiringrate <- global_hiringrate %>% add_row(YEAR = 2023, MONTH = "Jan", VALUES = (sum(nspp$A.TOTAL)/sum(nspp$D.TOTAL)) * 100)
+#Year and Month data must be replaced
+global_hiringrate$VALUES <- round(global_hiringrate$VALUES, digits = 2)
+
+#save output
+write.csv(global_hiringrate, "global_hiringrate.csv", row.names = FALSE)
+
+```
+
+```{r echo=FALSE}
+summary <- nspp %>%  select(REGION, SDO, HIRING_RATE) %>% group_by(REGION) %>% summarise(AVERAGE_RATE = mean(HIRING_RATE))
+kable(summary, caption = "Fill-up Rate by Region")
+
+```
+
+```{r echo=FALSE}
+current_rate <- length(global_hiringrate$VALUES)
+previous_rate <- current_rate-1
+
+pct_change <- ((global_hiringrate$VALUES[current_rate] - global_hiringrate$VALUES[previous_rate])/abs(global_hiringrate$VALUES[previous_rate])) * 100
+
+
+#https://www.calculatorsoup.com/calculators/algebra/percent-change-calculator.php
+```
+
+As of `r format (Sys.Date(), format="%B %d %Y")`, the filling-up rate of Teacher 1 items created under NSPP is `r global_hiringrate$VALUES[current_rate]`.
+
+Last month, the filling-up rate is `r global_hiringrate$VALUES[previous_rate]`. There is an increase/decrease by `r pct_change`.
+
+```{r echo=FALSE}
+ranked <- nspp %>% select(REGION, SDO, HIRING_RATE) %>% arrange(desc(HIRING_RATE), .by_group=TRUE) 
+
+sdo_highrate <- ranked %>% filter(HIRING_RATE == 100) %>% arrange(SDO)
+sdo_lowrate <- ranked %>% filter(HIRING_RATE<=50) %>% arrange(SDO)
+  
+```
+
+The SDOs with high fill-up rate of 100 percent are: 
+`r sdo_highrate$SDO`
+
+
+The SDOs with low fill-up rate of 50 percent and below are: 
+`r sdo_lowrate$SDO`
