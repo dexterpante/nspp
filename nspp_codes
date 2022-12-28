@@ -6,6 +6,9 @@ output: html_document
 ---
 
 ```{r echo=FALSE, message=FALSE}
+#IMPORTANT NOTE
+#Create your working directory first
+
 library(tidyverse)
 library(knitr)
 library(RCurl)
