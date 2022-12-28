@@ -18,7 +18,6 @@ library(RCurl)
 ```{r echo=FALSE}
 nspp_url <- "https://raw.githubusercontent.com/dexterpante/nspp/main/mini_nspp.csv"
 nspp <- read.csv(nspp_url)
-#("mini_nspp.csv")
 colnames(nspp) <- c("REGION","SDO", "D.KINDER", "D.ELEM","D.JHS", "D.SHS", "P.SHS", "D.TOTAL", "A.KINDER", "A.ELEM", "A.JHS", "A.SHS", "A.TOTAL" )
 
 nspp <- nspp %>% select(REGION, SDO, D.ELEM, D.JHS, D.SHS, A.ELEM, A.JHS, A.SHS) %>% mutate(D.TOTAL = D.ELEM + D.JHS + D.SHS, A.TOTAL = A.ELEM + A.JHS + A.SHS, HIRING_RATE = (A.TOTAL/D.TOTAL)*100, HIRING_RATE=round(HIRING_RATE, digits = 2)) %>% na.omit()
