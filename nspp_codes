@@ -11,7 +11,7 @@ output: html_document
 
 library(tidyverse)
 library(knitr)
-library(RCurl)
+
 ```
 
 
@@ -48,10 +48,15 @@ global_hiringrate$VALUES[1] <- (sum(nspp$A.TOTAL)/sum(nspp$D.TOTAL)) * 100
 #save output
 write.csv(global_hiringrate, "global_hiringrate.csv", row.names = FALSE)
 
+```
+
+
+```{r echo=FALSE}
+
 #read output
 global_hiringrate<- read.csv("global_hiringrate.csv")
 #add row and input data
-global_hiringrate <- global_hiringrate %>% add_row(YEAR = 2023, MONTH = "Jan", VALUES = (sum(nspp$A.TOTAL)/sum(nspp$D.TOTAL)) * 100)
+global_hiringrate <- global_hiringrate %>% add_row(YEAR = 2023, MONTH = "June", VALUES = (sum(nspp$A.TOTAL)/sum(nspp$D.TOTAL)) * 100)
 #Year and Month data must be replaced
 global_hiringrate$VALUES <- round(global_hiringrate$VALUES, digits = 2)
 
@@ -60,9 +65,16 @@ write.csv(global_hiringrate, "global_hiringrate.csv", row.names = FALSE)
 
 ```
 
+
 ```{r echo=FALSE}
 summary <- nspp %>%  select(REGION, SDO, HIRING_RATE) %>% group_by(REGION) %>% summarise(AVERAGE_RATE = mean(HIRING_RATE))
 kable(summary, caption = "Fill-up Rate by Region")
+
+plot <- ggplot(data = summary, aes(x=REGION, y=AVERAGE_RATE)) + 
+  geom_bar(stat="identity") +
+  geom_text(aes(label=AVERAGE_RATE)) +
+  theme_minimal()
+plot + coord_flip()
 
 ```
 
